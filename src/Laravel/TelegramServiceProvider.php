@@ -31,6 +31,8 @@ class TelegramServiceProvider extends ServiceProvider implements DeferrableProvi
             $this->publishes([
                 __DIR__ . '/../../database/migrations/create_telegram_bots_table.php.stub'
                     => $this->app->databasePath('migrations/' . date('Y_m_d_His', 0) . '_create_telegram_bots_table.php'),
+                __DIR__ . '/../../database/migrations/create_telegram_chats_table.php.stub'
+                    => $this->app->databasePath('migrations/' . date('Y_m_d_His', 1) . '_create_telegram_chats_table.php'),
             ], 'telegram-migrations');
         }
     }

@@ -56,4 +56,12 @@ class TelegramBot extends Model
     {
         return $this->morphTo();
     }
+
+    /**
+     * All chats/users that interacted with this bot.
+     */
+    public function chats(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TelegramChat::class, 'telegram_bot_id');
+    }
 }

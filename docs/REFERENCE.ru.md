@@ -437,7 +437,7 @@ $update->venue();       $update->poll();       $update->dice();
 $update->fileId();      // первый file_id в сообщении
 ```
 
-### Авто-роутинг через `UpdateHandler` (как WebhookHandler у DefStudio, но проще)
+### Авто-роутинг через `UpdateHandler`
 
 Расширьте `UpdateHandler`, переопределите методы `on*` / `command*` — он сам маршрутизирует
 всё за вас. Внутри доступны `$this->bot`, `$this->update` и хелперы ответа.
@@ -589,6 +589,26 @@ use TexHub\Telegram\Laravel\Models\TelegramBot;
 
 $record = TelegramBot::create(['name' => 'Acme', 'token' => '999:XYZ', 'webhook_secret' => '...']);
 $record->client()->sendMessage($chatId, 'Привет от бота арендатора');
+```
+
+### Сохранение чатов (модель `TelegramChat`)
+
+Сохраняйте каждый чат/пользователя, кто пишет боту — `chat_id`, имя, username,
+язык, аватар и др.:
+
+```php
+use TexHub\Telegram\Laravel\Models\TelegramChat;
+
+// В вебхуке: запоминаем того, кто написал боту:
+$chat = TelegramChat::rememberFromUpdate($update, $bot?->id);   // upsert по (bot, chat_id)
+
+// Получить и сохранить аватар (фото профиля), затем URL:
+$chat->refreshAvatar($botClient);
+$url = $chat->avatarUrl($botClient);
+
+// Связи:
+$bot->chats()->where('is_active', true)->get();   // все чаты бота
+$chat->bot;                                        // бот-владелец
 ```
 
 Контроллер вебхука:

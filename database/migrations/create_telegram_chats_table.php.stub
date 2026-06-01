@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+/**
+ * Stores every chat/user that interacts with your bot(s).
+ */
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('telegram_chats', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('telegram_bot_id')->nullable()->constrained('telegram_bots')->nullOnDelete();
+            $table->string('chat_id');                 // Telegram chat id (== user id for private chats)
+            $table->string('type')->nullable();        // private | group | supergroup | channel
+            $table->string('title')->nullable();       // group/channel title
+            $table->string('username')->nullable();
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
+            $table->string('name')->nullable();        // resolved display name
+            $table->string('language_code')->nullable();
+            $table->string('avatar')->nullable();      // profile photo file_id (resolve URL on demand)
+            $table->boolean('is_bot')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_blocked')->default(false); // set when the user blocks the bot
+            $table->timestamp('last_interaction_at')->nullable();
+            $table->json('meta')->nullable();
+            $table->timestamps();
+
+            $table->unique(['telegram_bot_id', 'chat_id']);
+            $table->index('chat_id');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('telegram_chats');
+    }
+};

@@ -437,7 +437,7 @@ $update->venue();       $update->poll();       $update->dice();
 $update->fileId();      // first file_id found on the message
 ```
 
-### Auto-routing with `UpdateHandler` (like DefStudio's WebhookHandler, but simpler)
+### Auto-routing with `UpdateHandler`
 
 Extend `UpdateHandler`, override the `on*` / `command*` methods, and let it route
 everything for you. Inside you get `$this->bot`, `$this->update` and reply helpers.
@@ -589,6 +589,26 @@ use TexHub\Telegram\Laravel\Models\TelegramBot;
 
 $record = TelegramBot::create(['name' => 'Acme', 'token' => '999:XYZ', 'webhook_secret' => '...']);
 $record->client()->sendMessage($chatId, 'Hello from a tenant bot');
+```
+
+### Saving chats (the `TelegramChat` model)
+
+Store every chat/user that interacts with your bot — `chat_id`, name, username,
+language, avatar and more:
+
+```php
+use TexHub\Telegram\Laravel\Models\TelegramChat;
+
+// In your webhook, remember whoever wrote to the bot:
+$chat = TelegramChat::rememberFromUpdate($update, $bot?->id);   // upsert by (bot, chat_id)
+
+// Fetch & store the avatar (profile photo) and resolve a URL:
+$chat->refreshAvatar($botClient);
+$url = $chat->avatarUrl($botClient);
+
+// Relations:
+$bot->chats()->where('is_active', true)->get();   // all chats of a bot
+$chat->bot;                                        // the owning bot
 ```
 
 Webhook controller:
