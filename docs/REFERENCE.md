@@ -437,48 +437,71 @@ $update->venue();       $update->poll();       $update->dice();
 $update->fileId();      // first file_id found on the message
 ```
 
-### Auto-routing with `UpdateHandler`
+### Build a bot the easy way — `UpdateHandler`
 
-Extend `UpdateHandler`, override the `on*` / `command*` methods, and let it route
-everything for you. Inside you get `$this->bot`, `$this->update` and reply helpers.
+The simplest way to build a bot. Extend `UpdateHandler` and write a method
+**named after each command** — `start` handles `/start`. The argument is whatever
+follows the command (e.g. a referral code from `/start REF123`). Inside, `$this->chat`
+is a fluent helper bound to the current chat.
 
 ```php
 use TexHub\Telegram\Handler\UpdateHandler;
 use TexHub\Telegram\Keyboard\InlineKeyboard;
 use TexHub\Telegram\Keyboard\Button;
 
-class MyBotHandler extends UpdateHandler
+class MyBot extends UpdateHandler
 {
-    protected function commandStart(string $payload): void   // handles "/start ..."
+    // "/start"  →  start();   "/start REF123"  →  start('REF123')
+    public function start(string $payload = ''): void
     {
-        $this->reply('Welcome! 👋', [
-            'reply_markup' => InlineKeyboard::make()->row(Button::callback('Menu', 'menu')),
-        ]);
+        if ($payload !== '') {
+            // Opened via t.me/yourbot?start=REF123 — capture who invited them:
+            $this->chat->message("Invited with code: {$payload}")->send();
+        }
+
+        $this->chat->message('Welcome! 👋')
+            ->keyboard(InlineKeyboard::make()->row(Button::callback('Menu', 'menu')))
+            ->send();
     }
 
-    protected function onText(string $text): void        { $this->reply('You said: ' . $text); }
-    protected function onPhoto(): void                   { $this->reply('Got photo ' . $this->update->photoFileId()); }
-    protected function onLocation(array $location): void { $this->reply("📍 {$location['latitude']}, {$location['longitude']}"); }
-    protected function onContact(array $contact): void   { $this->reply('📱 ' . $contact['phone_number']); }
-    protected function onCallbackQuery(array $cb): void  { $this->answerCallback('OK'); $this->reply('Pressed: ' . $cb['data']); }
+    public function help(): void                  { $this->chat->message('Send /start')->send(); }
+
+    public function onText(string $text): void    { $this->chat->message('You said: ' . $text)->send(); }
+    public function onPhoto(): void               { $this->chat->message('Nice photo ' . $this->update->photoFileId())->send(); }
+    public function onLocation(array $l): void    { $this->chat->message("📍 {$l['latitude']}, {$l['longitude']}")->send(); }
+    public function onContact(array $c): void     { $this->chat->message('📱 ' . $c['phone_number'])->send(); }
+    public function onCallbackQuery(array $cb): void { $this->answerCallback('OK'); }
 }
 ```
 
-Use it in your webhook (it verifies the secret, parses, and dispatches):
+Wire it in your webhook — one line (it verifies the secret, parses and dispatches):
 
 ```php
-(new MyBotHandler)->handleRequest(
+(new MyBot)->handleRequest(
     $bot,
     $request->getContent(),
     $request->header('X-Telegram-Bot-Api-Secret-Token'),
 );
 ```
 
-Override points: `commandX($payload)`, `onCommand($cmd, $payload)`, `onText($text)`,
-`onPhoto`, `onVideo`, `onDocument`, `onVoice`, `onAudio`, `onAnimation`, `onSticker`,
-`onLocation($loc)`, `onContact($c)`, `onCallbackQuery($cb)`, `onInlineQuery($q)`,
-`onPreCheckoutQuery($q)`, `onMessage`, `onOther`. Reply helpers: `reply()`, `replyPhoto()`,
-`replyChatAction()`, `answerCallback()`, `chatId()`, `fromId()`.
+**Commands** are matched by method name: `/start` → `start()`, `/help` → `help()`
+(you may also use `commandStart()` or a generic `onCommand($cmd, $payload)`).
+
+**Events** to override: `onText($text)`, `onPhoto`, `onVideo`, `onDocument`, `onVoice`,
+`onAudio`, `onAnimation`, `onSticker`, `onLocation($loc)`, `onContact($c)`,
+`onCallbackQuery($cb)`, `onInlineQuery($q)`, `onPreCheckoutQuery($q)`, `onMessage`, `onOther`.
+
+**Inside a handler:** `$this->chat` (fluent), `$this->bot`, `$this->update`, plus shortcuts
+`reply()`, `replyPhoto()`, `replyChatAction()`, `answerCallback()`, `chatId()`, `fromId()`.
+
+The fluent `$this->chat` reads naturally:
+
+```php
+$this->chat->message('Hello <b>world</b>')->html()->send();
+$this->chat->photo('/path/pic.jpg')->caption('Look')->send();
+$this->chat->message('Choose:')->keyboard(InlineKeyboard::make()->row(Button::callback('A', 'a')))->send();
+$this->chat->action('typing');
+```
 
 ---
 

@@ -47,7 +47,8 @@ final class HandlerTest extends TestCase
 
         $handler = new class extends UpdateHandler {
             public array $log = [];
-            protected function commandStart(string $payload): void { $this->log[] = "cmd:start:$payload"; $this->reply('hi'); }
+            // Simple command method name (the beginner-friendly style):
+            public function start(string $payload): void { $this->log[] = "cmd:start:$payload"; $this->chat->message('hi')->send(); }
             protected function onText(string $text): void { $this->log[] = "text:$text"; $this->reply('echo'); }
             protected function onLocation(array $loc): void { $this->log[] = 'loc:' . $loc['latitude']; $this->reply('got'); }
             protected function onCallbackQuery(array $cb): void { $this->log[] = 'cb:' . $cb['data']; $this->answerCallback('ok'); }
@@ -61,6 +62,24 @@ final class HandlerTest extends TestCase
         $this->assertSame(['cmd:start:hello', 'text:plain message', 'loc:38.5', 'cb:yes'], $handler->log);
         // command reply went out as sendMessage
         $this->assertSame('hi', $t->history[0]['params']['text']);
+    }
+
+    public function test_fluent_chat_builder(): void
+    {
+        $t = (new FakeTransport())->willReturn(['message_id' => 1, 'chat' => ['id' => 5]]);
+        $bot = new Bot(new Config('123:ABC'), $t);
+
+        $bot->chat(5)->message('Hello <b>world</b>')->html()->send();
+
+        $this->assertSame('sendMessage', $t->lastMethod());
+        $this->assertSame('Hello <b>world</b>', $t->last()['params']['text']);
+        $this->assertSame('HTML', $t->last()['params']['parse_mode']);
+        $this->assertSame(5, $t->last()['params']['chat_id']);
+
+        // photo with caption
+        $bot->chat(5)->photo('https://x/p.jpg')->caption('Look')->send();
+        $this->assertSame('sendPhoto', $t->lastMethod());
+        $this->assertSame('Look', $t->last()['params']['caption']);
     }
 
     public function test_handler_request_verifies_secret(): void

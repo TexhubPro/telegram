@@ -68,6 +68,22 @@ final class Bot
         return $this->call('getMe');
     }
 
+    /**
+     * Start a fluent message to a chat: `$bot->chat($id)->message('Hi')->send()`.
+     */
+    public function chat(int|string $chatId): \TexHub\Telegram\Messaging\ChatContext
+    {
+        return new \TexHub\Telegram\Messaging\ChatContext($this, $chatId);
+    }
+
+    /**
+     * Alias of {@see chat()}.
+     */
+    public function to(int|string $chatId): \TexHub\Telegram\Messaging\ChatContext
+    {
+        return $this->chat($chatId);
+    }
+
     // ---- Messages ---------------------------------------------------------
 
     /**

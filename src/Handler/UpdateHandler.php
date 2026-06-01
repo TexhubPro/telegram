@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace TexHub\Telegram\Handler;
 
+use ReflectionMethod;
 use TexHub\Telegram\Bot;
 use TexHub\Telegram\Enums\ChatAction;
 use TexHub\Telegram\InputFile;
+use TexHub\Telegram\Messaging\ChatContext;
 use TexHub\Telegram\Response;
 use TexHub\Telegram\Update;
 
@@ -18,36 +20,26 @@ use TexHub\Telegram\Update;
  * ```php
  * class MyBotHandler extends UpdateHandler
  * {
- *     protected function commandStart(string $payload): void
+ *     // "/start" — the method name IS the command. $payload is the text after it,
+ *     // e.g. for "/start REF123" you get the referral code "REF123".
+ *     public function start(string $payload = ''): void
  *     {
- *         $this->reply('Welcome! 👋');
+ *         $this->chat->message("Welcome! 👋 Invite code: {$payload}")->send();
  *     }
  *
- *     protected function onText(string $text): void
+ *     public function onText(string $text): void
  *     {
- *         $this->reply('You said: ' . $text);
+ *         $this->chat->message('You said: ' . $text)->send();
  *     }
  *
- *     protected function onPhoto(): void
+ *     public function onContact(array $contact): void
  *     {
- *         $fileId = $this->update->photoFileId();
- *         $this->reply('Nice photo!');
+ *         $this->chat->message('Phone: ' . $contact['phone_number'])->send();
  *     }
  *
- *     protected function onLocation(array $location): void
- *     {
- *         $this->reply("Got {$location['latitude']}, {$location['longitude']}");
- *     }
- *
- *     protected function onContact(array $contact): void
- *     {
- *         $this->reply('Phone: ' . $contact['phone_number']);
- *     }
- *
- *     protected function onCallbackQuery(array $callbackQuery): void
+ *     public function onCallbackQuery(array $callbackQuery): void
  *     {
  *         $this->answerCallback('Got it');
- *         $this->reply('You pressed: ' . ($callbackQuery['data'] ?? ''));
  *     }
  * }
  *
@@ -59,6 +51,11 @@ abstract class UpdateHandler
 {
     protected Bot $bot;
     protected Update $update;
+
+    /**
+     * A fluent helper bound to the current chat: `$this->chat->message('hi')->send()`.
+     */
+    protected ChatContext $chat;
 
     /**
      * Verify the secret token, parse the body and dispatch.
@@ -77,6 +74,11 @@ abstract class UpdateHandler
     {
         $this->bot = $bot;
         $this->update = $update;
+
+        $chatId = $update->chatId();
+        if ($chatId !== null) {
+            $this->chat = $bot->chat($chatId);
+        }
 
         if ($update->isCallbackQuery()) {
             $this->onCallbackQuery((array) $update->callbackQuery());
@@ -134,17 +136,20 @@ abstract class UpdateHandler
 
         $text = $this->update->text();
 
-        // Commands: "/start payload" → commandStart("payload") or onCommand("start", "payload").
+        // Commands: "/start payload" → start("payload") or commandStart("payload")
+        // or onCommand("start", "payload"). The plain method name is the easiest.
         if ($text !== null && str_starts_with($text, '/')) {
             $parts = explode(' ', ltrim($text, '/'), 2);
             $command = strtolower(strtok($parts[0], '@') ?: '');
             $payload = $parts[1] ?? '';
 
-            $method = 'command' . str_replace('_', '', ucwords($command, '_'));
-            if (method_exists($this, $method)) {
-                $this->{$method}($payload);
+            $studly = str_replace('_', '', ucwords($command, '_'));
+            foreach (['command' . $studly, $command, lcfirst($studly)] as $candidate) {
+                if ($this->isHandlerMethod($candidate)) {
+                    $this->{$candidate}($payload);
 
-                return;
+                    return;
+                }
             }
 
             $this->onCommand($command, $payload);
@@ -244,6 +249,19 @@ abstract class UpdateHandler
     }
 
     // ---- Reply helpers (bound to the current chat) ------------------------
+
+    /**
+     * Only treat a method as a command handler when it is defined in your
+     * subclass (so "/reply" or "/handle" can't trigger base methods).
+     */
+    private function isHandlerMethod(string $method): bool
+    {
+        if ($method === '' || ! method_exists($this, $method)) {
+            return false;
+        }
+
+        return (new ReflectionMethod($this, $method))->getDeclaringClass()->getName() !== self::class;
+    }
 
     protected function chatId(): int|string|null
     {

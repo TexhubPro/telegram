@@ -437,48 +437,71 @@ $update->venue();       $update->poll();       $update->dice();
 $update->fileId();      // первый file_id в сообщении
 ```
 
-### Авто-роутинг через `UpdateHandler`
+### Бот по-простому — `UpdateHandler`
 
-Расширьте `UpdateHandler`, переопределите методы `on*` / `command*` — он сам маршрутизирует
-всё за вас. Внутри доступны `$this->bot`, `$this->update` и хелперы ответа.
+Самый простой способ написать бота. Расширьте `UpdateHandler` и создайте метод
+**с именем команды** — `start` обрабатывает `/start`. Аргумент — это то, что идёт
+после команды (например реферальный код из `/start REF123`). Внутри `$this->chat` —
+текучий помощник, привязанный к текущему чату.
 
 ```php
 use TexHub\Telegram\Handler\UpdateHandler;
 use TexHub\Telegram\Keyboard\InlineKeyboard;
 use TexHub\Telegram\Keyboard\Button;
 
-class MyBotHandler extends UpdateHandler
+class MyBot extends UpdateHandler
 {
-    protected function commandStart(string $payload): void   // обрабатывает "/start ..."
+    // "/start"  →  start();   "/start REF123"  →  start('REF123')
+    public function start(string $payload = ''): void
     {
-        $this->reply('Добро пожаловать! 👋', [
-            'reply_markup' => InlineKeyboard::make()->row(Button::callback('Меню', 'menu')),
-        ]);
+        if ($payload !== '') {
+            // Открыли по ссылке t.me/yourbot?start=REF123 — узнаём, кто пригласил:
+            $this->chat->message("Код приглашения: {$payload}")->send();
+        }
+
+        $this->chat->message('Добро пожаловать! 👋')
+            ->keyboard(InlineKeyboard::make()->row(Button::callback('Меню', 'menu')))
+            ->send();
     }
 
-    protected function onText(string $text): void        { $this->reply('Вы написали: ' . $text); }
-    protected function onPhoto(): void                   { $this->reply('Фото ' . $this->update->photoFileId()); }
-    protected function onLocation(array $location): void { $this->reply("📍 {$location['latitude']}, {$location['longitude']}"); }
-    protected function onContact(array $contact): void   { $this->reply('📱 ' . $contact['phone_number']); }
-    protected function onCallbackQuery(array $cb): void  { $this->answerCallback('OK'); $this->reply('Нажато: ' . $cb['data']); }
+    public function help(): void                  { $this->chat->message('Напишите /start')->send(); }
+
+    public function onText(string $text): void    { $this->chat->message('Вы написали: ' . $text)->send(); }
+    public function onPhoto(): void               { $this->chat->message('Фото ' . $this->update->photoFileId())->send(); }
+    public function onLocation(array $l): void    { $this->chat->message("📍 {$l['latitude']}, {$l['longitude']}")->send(); }
+    public function onContact(array $c): void     { $this->chat->message('📱 ' . $c['phone_number'])->send(); }
+    public function onCallbackQuery(array $cb): void { $this->answerCallback('OK'); }
 }
 ```
 
-Использование в вебхуке (проверяет secret, парсит и маршрутизирует):
+Подключение в вебхуке — одна строка (сам проверяет secret, парсит и маршрутизирует):
 
 ```php
-(new MyBotHandler)->handleRequest(
+(new MyBot)->handleRequest(
     $bot,
     $request->getContent(),
     $request->header('X-Telegram-Bot-Api-Secret-Token'),
 );
 ```
 
-Точки переопределения: `commandX($payload)`, `onCommand($cmd, $payload)`, `onText($text)`,
-`onPhoto`, `onVideo`, `onDocument`, `onVoice`, `onAudio`, `onAnimation`, `onSticker`,
-`onLocation($loc)`, `onContact($c)`, `onCallbackQuery($cb)`, `onInlineQuery($q)`,
-`onPreCheckoutQuery($q)`, `onMessage`, `onOther`. Хелперы ответа: `reply()`, `replyPhoto()`,
-`replyChatAction()`, `answerCallback()`, `chatId()`, `fromId()`.
+**Команды** ловятся по имени метода: `/start` → `start()`, `/help` → `help()`
+(можно и `commandStart()`, или общий `onCommand($cmd, $payload)`).
+
+**События** для переопределения: `onText($text)`, `onPhoto`, `onVideo`, `onDocument`,
+`onVoice`, `onAudio`, `onAnimation`, `onSticker`, `onLocation($loc)`, `onContact($c)`,
+`onCallbackQuery($cb)`, `onInlineQuery($q)`, `onPreCheckoutQuery($q)`, `onMessage`, `onOther`.
+
+**Внутри хендлера:** `$this->chat` (текучий), `$this->bot`, `$this->update`, и сокращения
+`reply()`, `replyPhoto()`, `replyChatAction()`, `answerCallback()`, `chatId()`, `fromId()`.
+
+Текучий `$this->chat` читается естественно:
+
+```php
+$this->chat->message('Привет <b>мир</b>')->html()->send();
+$this->chat->photo('/path/pic.jpg')->caption('Смотри')->send();
+$this->chat->message('Выбор:')->keyboard(InlineKeyboard::make()->row(Button::callback('A', 'a')))->send();
+$this->chat->action('typing');
+```
 
 ---
 
