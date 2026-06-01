@@ -588,7 +588,25 @@ try {
 ```bash
 php artisan vendor:publish --tag=telegram-config
 php artisan vendor:publish --tag=telegram-migrations   # optional, multi-tenant
+php artisan migrate
 ```
+
+### Artisan commands
+
+Manage bots straight from the terminal:
+
+```bash
+# Interactive: paste the token, it validates, offers to auto-generate a webhook
+# secret and to register the webhook, then stores the bot in the DB.
+php artisan telegram:bot:add
+
+php artisan telegram:bots                       # list all bots (DB + config)
+php artisan telegram:webhook:set {bot?} {url?}  # register a webhook (uses stored secret)
+php artisan telegram:webhook:unset {bot?} --drop-pending
+php artisan telegram:webhook:info {bot?}        # show current webhook info
+```
+
+`{bot}` is the bot name or DB id (omit it to use the default config bot).
 
 `.env`:
 

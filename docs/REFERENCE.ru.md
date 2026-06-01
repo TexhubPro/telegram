@@ -588,7 +588,25 @@ try {
 ```bash
 php artisan vendor:publish --tag=telegram-config
 php artisan vendor:publish --tag=telegram-migrations   # опционально, мультитенант
+php artisan migrate
 ```
+
+### Artisan-команды
+
+Управляйте ботами прямо из терминала:
+
+```bash
+# Интерактивно: вставляете токен, он проверяется, предлагается авто-сгенерировать
+# секрет вебхука и зарегистрировать вебхук, затем бот сохраняется в БД.
+php artisan telegram:bot:add
+
+php artisan telegram:bots                       # список всех ботов (БД + конфиг)
+php artisan telegram:webhook:set {bot?} {url?}  # установить вебхук (берёт сохранённый секрет)
+php artisan telegram:webhook:unset {bot?} --drop-pending
+php artisan telegram:webhook:info {bot?}        # текущая информация о вебхуке
+```
+
+`{bot}` — имя бота или его id в БД (без аргумента берётся бот по умолчанию из конфига).
 
 `.env`:
 

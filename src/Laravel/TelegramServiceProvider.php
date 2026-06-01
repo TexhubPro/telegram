@@ -24,6 +24,14 @@ class TelegramServiceProvider extends ServiceProvider implements DeferrableProvi
     public function boot(): void
     {
         if ($this->app->runningInConsole()) {
+            $this->commands([
+                Commands\AddBotCommand::class,
+                Commands\SetWebhookCommand::class,
+                Commands\UnsetWebhookCommand::class,
+                Commands\WebhookInfoCommand::class,
+                Commands\ListBotsCommand::class,
+            ]);
+
             $this->publishes([
                 __DIR__ . '/../../config/telegram.php' => $this->app->configPath('telegram.php'),
             ], 'telegram-config');
