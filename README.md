@@ -10,6 +10,8 @@ A full-featured, **multi-tenant** Telegram **Bot API** & **Telegram Business** S
 
 > The **entire Bot API** is reachable via `->call()`, with typed helpers and builders for the common cases. Secure by default: webhook secret-token verification and token scrubbing in errors.
 
+> 📘 **[Full method reference & cookbook →](docs/REFERENCE.md)** — every method with copy-paste examples and example responses.
+
 Reference: <https://core.telegram.org/bots/api>
 
 ---
