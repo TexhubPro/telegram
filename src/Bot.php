@@ -347,6 +347,66 @@ final class Bot
         return $this->call('unbanChatMember', ['chat_id' => $chatId, 'user_id' => $userId] + $options);
     }
 
+    /**
+     * @param array<string, mixed> $permissions ChatPermissions object.
+     * @param array<string, mixed> $options
+     */
+    public function restrictChatMember(int|string $chatId, int $userId, array $permissions, array $options = []): Response
+    {
+        return $this->call('restrictChatMember', ['chat_id' => $chatId, 'user_id' => $userId, 'permissions' => $permissions] + $options);
+    }
+
+    /**
+     * @param array<string, mixed> $rights e.g. ['can_manage_chat' => true, 'can_delete_messages' => true]
+     */
+    public function promoteChatMember(int|string $chatId, int $userId, array $rights = []): Response
+    {
+        return $this->call('promoteChatMember', ['chat_id' => $chatId, 'user_id' => $userId] + $rights);
+    }
+
+    public function getChatAdministrators(int|string $chatId): Response
+    {
+        return $this->call('getChatAdministrators', ['chat_id' => $chatId]);
+    }
+
+    public function getChatMemberCount(int|string $chatId): Response
+    {
+        return $this->call('getChatMemberCount', ['chat_id' => $chatId]);
+    }
+
+    public function leaveChat(int|string $chatId): Response
+    {
+        return $this->call('leaveChat', ['chat_id' => $chatId]);
+    }
+
+    public function setChatTitle(int|string $chatId, string $title): Response
+    {
+        return $this->call('setChatTitle', ['chat_id' => $chatId, 'title' => $title]);
+    }
+
+    public function setChatDescription(int|string $chatId, string $description): Response
+    {
+        return $this->call('setChatDescription', ['chat_id' => $chatId, 'description' => $description]);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function createChatInviteLink(int|string $chatId, array $options = []): Response
+    {
+        return $this->call('createChatInviteLink', ['chat_id' => $chatId] + $options);
+    }
+
+    public function exportChatInviteLink(int|string $chatId): Response
+    {
+        return $this->call('exportChatInviteLink', ['chat_id' => $chatId]);
+    }
+
+    public function unpinAllChatMessages(int|string $chatId): Response
+    {
+        return $this->call('unpinAllChatMessages', ['chat_id' => $chatId]);
+    }
+
     // ---- Files ------------------------------------------------------------
 
     public function getFile(string $fileId): Response
@@ -391,9 +451,59 @@ final class Bot
         return $this->call('deleteWebhook', ['drop_pending_updates' => $dropPendingUpdates]);
     }
 
+    /**
+     * Alias of {@see deleteWebhook()} — remove the webhook integration.
+     */
+    public function unsetWebhook(bool $dropPendingUpdates = false): Response
+    {
+        return $this->deleteWebhook($dropPendingUpdates);
+    }
+
     public function getWebhookInfo(): Response
     {
         return $this->call('getWebhookInfo');
+    }
+
+    // ---- Bot settings -----------------------------------------------------
+
+    /**
+     * @param array<int, array{command: string, description: string}> $commands
+     * @param array<string, mixed>                                    $options
+     */
+    public function setMyCommands(array $commands, array $options = []): Response
+    {
+        return $this->call('setMyCommands', ['commands' => $commands] + $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function deleteMyCommands(array $options = []): Response
+    {
+        return $this->call('deleteMyCommands', $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function getMyCommands(array $options = []): Response
+    {
+        return $this->call('getMyCommands', $options);
+    }
+
+    public function setMyName(string $name, ?string $languageCode = null): Response
+    {
+        return $this->call('setMyName', ['name' => $name, 'language_code' => $languageCode]);
+    }
+
+    public function setMyDescription(string $description, ?string $languageCode = null): Response
+    {
+        return $this->call('setMyDescription', ['description' => $description, 'language_code' => $languageCode]);
+    }
+
+    public function setMyShortDescription(string $shortDescription, ?string $languageCode = null): Response
+    {
+        return $this->call('setMyShortDescription', ['short_description' => $shortDescription, 'language_code' => $languageCode]);
     }
 
     /**

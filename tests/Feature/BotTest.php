@@ -144,6 +144,28 @@ final class BotTest extends TestCase
         $this->assertSame('👍', $t->last()['params']['reaction'][0]['emoji']);
     }
 
+    public function test_unset_webhook_and_commands_and_chat_admin(): void
+    {
+        $t = new FakeTransport();
+        $t->willReturn(true)->willReturn(true)->willReturn(true)->willReturn(42);
+
+        $bot = $this->bot($t);
+
+        $bot->unsetWebhook(true);
+        $this->assertSame('deleteWebhook', $t->lastMethod());
+        $this->assertTrue($t->last()['params']['drop_pending_updates']);
+
+        $bot->setMyCommands([['command' => 'start', 'description' => 'Start']]);
+        $this->assertSame('setMyCommands', $t->lastMethod());
+        $this->assertSame('start', $t->last()['params']['commands'][0]['command']);
+
+        $bot->setChatTitle(-100, 'New title');
+        $this->assertSame('setChatTitle', $t->lastMethod());
+
+        $bot->getChatMemberCount(-100);
+        $this->assertSame('getChatMemberCount', $t->lastMethod());
+    }
+
     public function test_api_error_throws(): void
     {
         $t = (new FakeTransport())->willFail(429, 'Too Many Requests', ['retry_after' => 5]);
