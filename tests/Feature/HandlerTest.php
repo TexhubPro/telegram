@@ -82,6 +82,50 @@ final class HandlerTest extends TestCase
         $this->assertSame('Look', $t->last()['params']['caption']);
     }
 
+    public function test_photo_with_caption_and_voice_are_readable(): void
+    {
+        // A photo message carries both the photo AND the caption (its "text").
+        $u = new Update(['message' => [
+            'message_id' => 1, 'chat' => ['id' => 1],
+            'photo' => [['file_id' => 'small'], ['file_id' => 'big']],
+            'caption' => 'Look at this',
+        ]]);
+        $this->assertSame('big', $u->photoFileId());
+        $this->assertSame('Look at this', $u->caption());
+
+        // Incoming voice message:
+        $voice = new Update(['message' => ['chat' => ['id' => 1], 'voice' => ['file_id' => 'v1', 'duration' => 3]]]);
+        $this->assertSame('v1', $voice->voice()['file_id']);
+        $this->assertSame('v1', $voice->fileId());
+    }
+
+    public function test_send_photo_with_caption_album_and_voice(): void
+    {
+        $t = new FakeTransport();
+        $t->willReturn(['message_id' => 1, 'chat' => ['id' => 1]])
+          ->willReturn([['message_id' => 2], ['message_id' => 3]])
+          ->willReturn(['message_id' => 4, 'chat' => ['id' => 1]]);
+
+        $bot = new Bot(new Config('123:ABC'), $t);
+
+        // photo + caption
+        $bot->chat(1)->photo('https://x/p.jpg')->caption('Hello')->send();
+        $this->assertSame('sendPhoto', $t->lastMethod());
+        $this->assertSame('Hello', $t->last()['params']['caption']);
+
+        // album of photos with a caption on the first
+        $bot->chat(1)->photos(['https://x/1.jpg', 'https://x/2.jpg'], 'Album');
+        $this->assertSame('sendMediaGroup', $t->lastMethod());
+        $media = $t->last()['params']['media'];
+        $this->assertCount(2, $media);
+        $this->assertSame('Album', $media[0]['caption']);
+        $this->assertArrayNotHasKey('caption', $media[1]);
+
+        // voice
+        $bot->chat(1)->voice('https://x/voice.ogg')->send();
+        $this->assertSame('sendVoice', $t->lastMethod());
+    }
+
     public function test_handler_request_verifies_secret(): void
     {
         $t = (new FakeTransport())->willReturn(['message_id' => 1, 'chat' => ['id' => 1]]);

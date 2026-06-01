@@ -67,6 +67,38 @@ final class ChatContext
         return (new PendingMessage($this->bot, $this->chatId))->contact($phone, $firstName);
     }
 
+    /**
+     * Send an album (media group). Pass ready InputMedia items, e.g.
+     * [['type' => 'photo', 'media' => $url, 'caption' => 'First']].
+     *
+     * @param array<int, array<string, mixed>> $media
+     * @param array<string, mixed>             $options
+     */
+    public function mediaGroup(array $media, array $options = []): Response
+    {
+        return $this->bot->sendMediaGroup($this->chatId, $media, $options);
+    }
+
+    /**
+     * Convenience album of photos (URLs / file_ids), with the caption on the first.
+     *
+     * @param array<int, string>   $photos
+     * @param array<string, mixed> $options
+     */
+    public function photos(array $photos, ?string $caption = null, array $options = []): Response
+    {
+        $media = [];
+        foreach (array_values($photos) as $i => $photo) {
+            $item = ['type' => 'photo', 'media' => $photo];
+            if ($i === 0 && $caption !== null) {
+                $item['caption'] = $caption;
+            }
+            $media[] = $item;
+        }
+
+        return $this->mediaGroup($media, $options);
+    }
+
     public function action(ChatAction|string $action): Response
     {
         return $this->bot->sendChatAction($this->chatId, $action);

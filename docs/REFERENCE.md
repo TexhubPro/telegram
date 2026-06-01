@@ -164,6 +164,34 @@ $bot->sendChatAction($chatId, ChatAction::UploadPhoto);
              { "file_id": "AgACAg...", "width": 1280, "height": 1280 } ], "caption": "A photo" }
 ```
 
+### Caption, albums, voice & chat actions
+
+```php
+// Photo WITH a caption (the media "text"):
+$bot->chat($chatId)->photo('https://x/p.jpg')->caption('Look at this')->send();
+$bot->sendPhoto($chatId, 'https://x/p.jpg', ['caption' => 'Look at this']);
+
+// Album: several photos, one caption on the first:
+$bot->chat($chatId)->photos(['https://x/1.jpg', 'https://x/2.jpg', 'https://x/3.jpg'], 'My album');
+// or a mixed media group:
+$bot->chat($chatId)->mediaGroup([
+    ['type' => 'photo', 'media' => 'https://x/1.jpg', 'caption' => 'First'],
+    ['type' => 'video', 'media' => 'https://x/clip.mp4'],
+]);
+
+// Voice — send and receive:
+$bot->chat($chatId)->voice(InputFile::fromPath('/path/voice.ogg'))->send();
+// incoming: $update->voice()  → ['file_id' => ..., 'duration' => ...];  $update->fileId()
+
+// Chat actions ("typing…", "uploading photo…"):
+$bot->sendChatAction($chatId, ChatAction::Typing);
+$bot->chat($chatId)->action('upload_voice');
+// inside a handler: $this->replyChatAction(ChatAction::Typing);
+```
+
+> A Telegram message holds **either** `text` (text message) **or** `caption` (media message).
+> So for an incoming photo/video read `$update->caption()`; for plain text read `$update->text()`.
+
 ---
 
 ## 6. Keyboards & buttons

@@ -164,6 +164,34 @@ $bot->sendChatAction($chatId, ChatAction::UploadPhoto);
              { "file_id": "AgACAg...", "width": 1280, "height": 1280 } ], "caption": "Фото" }
 ```
 
+### Подпись, альбомы, голосовые и chat actions
+
+```php
+// Фото С подписью (это «текст» медиа):
+$bot->chat($chatId)->photo('https://x/p.jpg')->caption('Смотри')->send();
+$bot->sendPhoto($chatId, 'https://x/p.jpg', ['caption' => 'Смотри']);
+
+// Альбом: несколько фото, подпись на первом:
+$bot->chat($chatId)->photos(['https://x/1.jpg', 'https://x/2.jpg', 'https://x/3.jpg'], 'Мой альбом');
+// или смешанная медиагруппа:
+$bot->chat($chatId)->mediaGroup([
+    ['type' => 'photo', 'media' => 'https://x/1.jpg', 'caption' => 'Первое'],
+    ['type' => 'video', 'media' => 'https://x/clip.mp4'],
+]);
+
+// Голосовые — отправка и приём:
+$bot->chat($chatId)->voice(InputFile::fromPath('/path/voice.ogg'))->send();
+// входящее: $update->voice()  → ['file_id' => ..., 'duration' => ...];  $update->fileId()
+
+// Chat actions («печатает…», «загружает фото…»):
+$bot->sendChatAction($chatId, ChatAction::Typing);
+$bot->chat($chatId)->action('upload_voice');
+// внутри хендлера: $this->replyChatAction(ChatAction::Typing);
+```
+
+> Сообщение Telegram содержит **либо** `text` (текстовое), **либо** `caption` (медиа).
+> Поэтому для входящего фото/видео читай `$update->caption()`, для текста — `$update->text()`.
+
 ---
 
 ## 6. Клавиатуры и кнопки
