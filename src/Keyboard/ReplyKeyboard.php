@@ -16,11 +16,19 @@ final class ReplyKeyboard
     private bool $resize = true;
     private bool $oneTime = false;
     private bool $selective = false;
+    private bool $persistent = false;
     private ?string $placeholder = null;
 
     public static function make(): self
     {
         return new self();
+    }
+
+    public function persistent(bool $persistent = true): self
+    {
+        $this->persistent = $persistent;
+
+        return $this;
     }
 
     /**
@@ -73,6 +81,7 @@ final class ReplyKeyboard
             'keyboard' => $this->rows,
             'resize_keyboard' => $this->resize,
             'one_time_keyboard' => $this->oneTime,
+            'is_persistent' => $this->persistent,
             'selective' => $this->selective,
         ];
 

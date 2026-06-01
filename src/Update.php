@@ -86,6 +86,49 @@ final class Update
     }
 
     /**
+     * @return array<string, mixed>|null
+     */
+    public function preCheckoutQuery(): ?array
+    {
+        return is_array($this->data['pre_checkout_query'] ?? null) ? $this->data['pre_checkout_query'] : null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function shippingQuery(): ?array
+    {
+        return is_array($this->data['shipping_query'] ?? null) ? $this->data['shipping_query'] : null;
+    }
+
+    /**
+     * Successful payment info attached to a message, if any.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function successfulPayment(): ?array
+    {
+        $payment = $this->message()['successful_payment'] ?? null;
+
+        return is_array($payment) ? $payment : null;
+    }
+
+    public function isPreCheckoutQuery(): bool
+    {
+        return $this->preCheckoutQuery() !== null;
+    }
+
+    public function isShippingQuery(): bool
+    {
+        return $this->shippingQuery() !== null;
+    }
+
+    public function isSuccessfulPayment(): bool
+    {
+        return $this->successfulPayment() !== null;
+    }
+
+    /**
      * The text of the incoming message, or the data of a callback query.
      */
     public function text(): ?string

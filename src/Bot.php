@@ -322,6 +322,86 @@ final class Bot
         return $this->call('answerInlineQuery', ['inline_query_id' => $inlineQueryId, 'results' => $results] + $options);
     }
 
+    // ---- Payments (Invoices & Telegram Stars) -----------------------------
+
+    /**
+     * Send an invoice. For Telegram Stars use currency "XTR" and an empty provider token.
+     *
+     * @param array<int, array{label: string, amount: int}> $prices
+     * @param array<string, mixed>                           $options
+     */
+    public function sendInvoice(int|string $chatId, string $title, string $description, string $payload, string $currency, array $prices, array $options = []): Response
+    {
+        return $this->call('sendInvoice', [
+            'chat_id' => $chatId, 'title' => $title, 'description' => $description,
+            'payload' => $payload, 'currency' => $currency, 'prices' => $prices,
+        ] + $options);
+    }
+
+    /**
+     * Create an invoice link (returns the URL string in the result).
+     *
+     * @param array<int, array{label: string, amount: int}> $prices
+     * @param array<string, mixed>                           $options
+     */
+    public function createInvoiceLink(string $title, string $description, string $payload, string $currency, array $prices, array $options = []): Response
+    {
+        return $this->call('createInvoiceLink', [
+            'title' => $title, 'description' => $description, 'payload' => $payload,
+            'currency' => $currency, 'prices' => $prices,
+        ] + $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options shipping_options OR error_message
+     */
+    public function answerShippingQuery(string $shippingQueryId, bool $ok, array $options = []): Response
+    {
+        return $this->call('answerShippingQuery', ['shipping_query_id' => $shippingQueryId, 'ok' => $ok] + $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options error_message when $ok is false
+     */
+    public function answerPreCheckoutQuery(string $preCheckoutQueryId, bool $ok, array $options = []): Response
+    {
+        return $this->call('answerPreCheckoutQuery', ['pre_checkout_query_id' => $preCheckoutQueryId, 'ok' => $ok] + $options);
+    }
+
+    /**
+     * Refund a successful Telegram Stars payment.
+     */
+    public function refundStarPayment(int $userId, string $telegramPaymentChargeId): Response
+    {
+        return $this->call('refundStarPayment', ['user_id' => $userId, 'telegram_payment_charge_id' => $telegramPaymentChargeId]);
+    }
+
+    // ---- Games ------------------------------------------------------------
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function sendGame(int|string $chatId, string $gameShortName, array $options = []): Response
+    {
+        return $this->call('sendGame', ['chat_id' => $chatId, 'game_short_name' => $gameShortName] + $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options chat_id+message_id OR inline_message_id, force, disable_edit_message
+     */
+    public function setGameScore(int $userId, int $score, array $options = []): Response
+    {
+        return $this->call('setGameScore', ['user_id' => $userId, 'score' => $score] + $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options chat_id+message_id OR inline_message_id
+     */
+    public function getGameHighScores(int $userId, array $options = []): Response
+    {
+        return $this->call('getGameHighScores', ['user_id' => $userId] + $options);
+    }
+
     // ---- Chat -------------------------------------------------------------
 
     public function getChat(int|string $chatId): Response

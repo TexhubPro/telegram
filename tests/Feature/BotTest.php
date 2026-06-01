@@ -166,6 +166,34 @@ final class BotTest extends TestCase
         $this->assertSame('getChatMemberCount', $t->lastMethod());
     }
 
+    public function test_payments_invoice_and_precheckout(): void
+    {
+        $t = new FakeTransport();
+        $t->willReturn(['message_id' => 1, 'chat' => ['id' => 1]])->willReturn(true);
+
+        $bot = $this->bot($t);
+
+        // Telegram Stars invoice (currency XTR)
+        $bot->sendInvoice(1, 'Pro plan', 'Monthly', 'payload-1', 'XTR', [['label' => 'Pro', 'amount' => 500]]);
+        $this->assertSame('sendInvoice', $t->lastMethod());
+        $this->assertSame('XTR', $t->last()['params']['currency']);
+        $this->assertSame(500, $t->last()['params']['prices'][0]['amount']);
+
+        $bot->answerPreCheckoutQuery('pcq_1', true);
+        $this->assertSame('answerPreCheckoutQuery', $t->lastMethod());
+        $this->assertTrue($t->last()['params']['ok']);
+    }
+
+    public function test_send_game(): void
+    {
+        $t = (new FakeTransport())->willReturn(['message_id' => 1, 'chat' => ['id' => 1]]);
+
+        $this->bot($t)->sendGame(1, 'my_game');
+
+        $this->assertSame('sendGame', $t->lastMethod());
+        $this->assertSame('my_game', $t->last()['params']['game_short_name']);
+    }
+
     public function test_api_error_throws(): void
     {
         $t = (new FakeTransport())->willFail(429, 'Too Many Requests', ['retry_after' => 5]);
