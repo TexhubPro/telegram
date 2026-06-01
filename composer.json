@@ -1,0 +1,61 @@
+{
+    "name": "texhub/telegram",
+    "description": "Full-featured, multi-tenant Telegram Bot API & Telegram Business SDK for any PHP framework with first-class Laravel support: messages, media, keyboards, webhooks, long polling and more.",
+    "type": "library",
+    "keywords": ["php", "laravel", "telegram", "telegram-bot", "bot-api", "telegram-business", "webhooks", "multi-tenant", "texhub"],
+    "homepage": "https://texhub.pro",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mahmudi Shodmehr",
+            "email": "info@texhub.pro",
+            "homepage": "https://texhub.pro",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://texhub.pro",
+        "docs": "https://core.telegram.org/bots/api"
+    },
+    "require": {
+        "php": "^8.2",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-hash": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0 || ^12.0",
+        "illuminate/support": "^11.0 || ^12.0 || ^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "TexHub\\Telegram\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TexHub\\Telegram\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "TexHub\\Telegram\\Laravel\\TelegramServiceProvider"
+            ],
+            "aliases": {
+                "Telegram": "TexHub\\Telegram\\Laravel\\Telegram"
+            }
+        }
+    },
+    "suggest": {
+        "illuminate/support": "Required to use the package inside a Laravel application (service provider, facade, config, model, migration)."
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
