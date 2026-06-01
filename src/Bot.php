@@ -197,9 +197,96 @@ final class Bot
         ]);
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function editMessageCaption(int|string $chatId, int $messageId, ?string $caption = null, array $options = []): Response
+    {
+        return $this->call('editMessageCaption', $this->withParseMode([
+            'chat_id' => $chatId, 'message_id' => $messageId, 'caption' => $caption,
+        ] + $options));
+    }
+
+    /**
+     * Replace the media (photo/video/document/audio/animation) of a message.
+     *
+     * @param array<string, mixed> $media An InputMedia object, e.g.
+     *        ['type' => 'photo', 'media' => $urlOrAttach, 'caption' => '...'].
+     * @param array<string, mixed> $options
+     */
+    public function editMessageMedia(int|string $chatId, int $messageId, array $media, array $options = []): Response
+    {
+        return $this->call('editMessageMedia', ['chat_id' => $chatId, 'message_id' => $messageId, 'media' => $media] + $options);
+    }
+
     public function deleteMessage(int|string $chatId, int $messageId): Response
     {
         return $this->call('deleteMessage', ['chat_id' => $chatId, 'message_id' => $messageId]);
+    }
+
+    /**
+     * Delete multiple messages at once.
+     *
+     * @param array<int, int> $messageIds
+     */
+    public function deleteMessages(int|string $chatId, array $messageIds): Response
+    {
+        return $this->call('deleteMessages', ['chat_id' => $chatId, 'message_ids' => $messageIds]);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function sendVideoNote(int|string $chatId, string|InputFile $videoNote, array $options = []): Response
+    {
+        return $this->call('sendVideoNote', ['chat_id' => $chatId, 'video_note' => $videoNote] + $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function sendDice(int|string $chatId, array $options = []): Response
+    {
+        return $this->call('sendDice', ['chat_id' => $chatId] + $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function sendVenue(int|string $chatId, float $latitude, float $longitude, string $title, string $address, array $options = []): Response
+    {
+        return $this->call('sendVenue', [
+            'chat_id' => $chatId, 'latitude' => $latitude, 'longitude' => $longitude,
+            'title' => $title, 'address' => $address,
+        ] + $options);
+    }
+
+    /**
+     * React to a message with emoji(s) (Bot API 7.0+).
+     *
+     * @param array<int, string>|string $emoji One or more emoji, e.g. '👍' or ['👍','🔥'].
+     */
+    public function setMessageReaction(int|string $chatId, int $messageId, array|string $emoji, bool $isBig = false): Response
+    {
+        $emojis = is_array($emoji) ? $emoji : [$emoji];
+        $reaction = array_map(static fn (string $e) => ['type' => 'emoji', 'emoji' => $e], $emojis);
+
+        return $this->call('setMessageReaction', [
+            'chat_id' => $chatId, 'message_id' => $messageId, 'reaction' => $reaction, 'is_big' => $isBig,
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function pinChatMessage(int|string $chatId, int $messageId, array $options = []): Response
+    {
+        return $this->call('pinChatMessage', ['chat_id' => $chatId, 'message_id' => $messageId] + $options);
+    }
+
+    public function unpinChatMessage(int|string $chatId, ?int $messageId = null): Response
+    {
+        return $this->call('unpinChatMessage', ['chat_id' => $chatId, 'message_id' => $messageId]);
     }
 
     /**

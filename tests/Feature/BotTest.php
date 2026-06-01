@@ -106,6 +106,44 @@ final class BotTest extends TestCase
         $this->assertStringContainsString('/file/bot123:ABC/photos/file_1.jpg', $t->last()['url']);
     }
 
+    public function test_copy_text_and_webapp_buttons(): void
+    {
+        $t = (new FakeTransport())->willReturn(['message_id' => 1, 'chat' => ['id' => 1]]);
+
+        $this->bot($t)->sendMessage(1, 'Buttons', [
+            'reply_markup' => InlineKeyboard::make()->row(
+                Button::copyText('Copy code', 'PROMO2026'),
+                Button::webApp('Open app', 'https://app.texhub.pro'),
+            ),
+        ]);
+
+        $kb = $t->last()['params']['reply_markup']['inline_keyboard'][0];
+        $this->assertSame('PROMO2026', $kb[0]['copy_text']['text']);
+        $this->assertSame('https://app.texhub.pro', $kb[1]['web_app']['url']);
+    }
+
+    public function test_edit_media_delete_and_reaction(): void
+    {
+        $t = new FakeTransport();
+        $t->willReturn(['message_id' => 1, 'chat' => ['id' => 1]])
+          ->willReturn(true)
+          ->willReturn(true);
+
+        $bot = $this->bot($t);
+
+        $bot->editMessageMedia(1, 5, ['type' => 'photo', 'media' => 'https://x/p.jpg', 'caption' => 'new']);
+        $this->assertSame('editMessageMedia', $t->lastMethod());
+        $this->assertSame('photo', $t->last()['params']['media']['type']);
+
+        $bot->deleteMessages(1, [5, 6, 7]);
+        $this->assertSame('deleteMessages', $t->lastMethod());
+        $this->assertSame([5, 6, 7], $t->last()['params']['message_ids']);
+
+        $bot->setMessageReaction(1, 5, '👍');
+        $this->assertSame('emoji', $t->last()['params']['reaction'][0]['type']);
+        $this->assertSame('👍', $t->last()['params']['reaction'][0]['emoji']);
+    }
+
     public function test_api_error_throws(): void
     {
         $t = (new FakeTransport())->willFail(429, 'Too Many Requests', ['retry_after' => 5]);
