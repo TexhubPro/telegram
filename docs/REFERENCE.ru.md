@@ -422,6 +422,64 @@ http_response_code(200);
   "chat": { "id": 42, "type": "private" }, "date": 1717250000, "text": "/start" } }
 ```
 
+### Всё, что может прийти (аксессоры Update)
+
+```php
+$update->messageId();   // id входящего сообщения
+$update->text();        // текст или данные callback
+$update->caption();     // подпись к медиа
+$update->photo();       $update->photoFileId();
+$update->video();       $update->document();   $update->audio();
+$update->voice();       $update->animation();  $update->sticker();  $update->videoNote();
+$update->location();    // ['latitude' => .., 'longitude' => ..]
+$update->contact();     // ['phone_number' => .., 'first_name' => ..]
+$update->venue();       $update->poll();       $update->dice();
+$update->fileId();      // первый file_id в сообщении
+```
+
+### Авто-роутинг через `UpdateHandler` (как WebhookHandler у DefStudio, но проще)
+
+Расширьте `UpdateHandler`, переопределите методы `on*` / `command*` — он сам маршрутизирует
+всё за вас. Внутри доступны `$this->bot`, `$this->update` и хелперы ответа.
+
+```php
+use TexHub\Telegram\Handler\UpdateHandler;
+use TexHub\Telegram\Keyboard\InlineKeyboard;
+use TexHub\Telegram\Keyboard\Button;
+
+class MyBotHandler extends UpdateHandler
+{
+    protected function commandStart(string $payload): void   // обрабатывает "/start ..."
+    {
+        $this->reply('Добро пожаловать! 👋', [
+            'reply_markup' => InlineKeyboard::make()->row(Button::callback('Меню', 'menu')),
+        ]);
+    }
+
+    protected function onText(string $text): void        { $this->reply('Вы написали: ' . $text); }
+    protected function onPhoto(): void                   { $this->reply('Фото ' . $this->update->photoFileId()); }
+    protected function onLocation(array $location): void { $this->reply("📍 {$location['latitude']}, {$location['longitude']}"); }
+    protected function onContact(array $contact): void   { $this->reply('📱 ' . $contact['phone_number']); }
+    protected function onCallbackQuery(array $cb): void  { $this->answerCallback('OK'); $this->reply('Нажато: ' . $cb['data']); }
+}
+```
+
+Использование в вебхуке (проверяет secret, парсит и маршрутизирует):
+
+```php
+(new MyBotHandler)->handleRequest(
+    $bot,
+    $request->getContent(),
+    $request->header('X-Telegram-Bot-Api-Secret-Token'),
+);
+```
+
+Точки переопределения: `commandX($payload)`, `onCommand($cmd, $payload)`, `onText($text)`,
+`onPhoto`, `onVideo`, `onDocument`, `onVoice`, `onAudio`, `onAnimation`, `onSticker`,
+`onLocation($loc)`, `onContact($c)`, `onCallbackQuery($cb)`, `onInlineQuery($q)`,
+`onPreCheckoutQuery($q)`, `onMessage`, `onOther`. Хелперы ответа: `reply()`, `replyPhoto()`,
+`replyChatAction()`, `answerCallback()`, `chatId()`, `fromId()`.
+
 ---
 
 ## 16. Telegram Business

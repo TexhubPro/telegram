@@ -422,6 +422,64 @@ http_response_code(200);
   "chat": { "id": 42, "type": "private" }, "date": 1717250000, "text": "/start" } }
 ```
 
+### Everything that can arrive (Update accessors)
+
+```php
+$update->messageId();   // incoming message id
+$update->text();        // text or callback data
+$update->caption();     // media caption
+$update->photo();       $update->photoFileId();
+$update->video();       $update->document();   $update->audio();
+$update->voice();       $update->animation();  $update->sticker();  $update->videoNote();
+$update->location();    // ['latitude' => .., 'longitude' => ..]
+$update->contact();     // ['phone_number' => .., 'first_name' => ..]
+$update->venue();       $update->poll();       $update->dice();
+$update->fileId();      // first file_id found on the message
+```
+
+### Auto-routing with `UpdateHandler` (like DefStudio's WebhookHandler, but simpler)
+
+Extend `UpdateHandler`, override the `on*` / `command*` methods, and let it route
+everything for you. Inside you get `$this->bot`, `$this->update` and reply helpers.
+
+```php
+use TexHub\Telegram\Handler\UpdateHandler;
+use TexHub\Telegram\Keyboard\InlineKeyboard;
+use TexHub\Telegram\Keyboard\Button;
+
+class MyBotHandler extends UpdateHandler
+{
+    protected function commandStart(string $payload): void   // handles "/start ..."
+    {
+        $this->reply('Welcome! 👋', [
+            'reply_markup' => InlineKeyboard::make()->row(Button::callback('Menu', 'menu')),
+        ]);
+    }
+
+    protected function onText(string $text): void        { $this->reply('You said: ' . $text); }
+    protected function onPhoto(): void                   { $this->reply('Got photo ' . $this->update->photoFileId()); }
+    protected function onLocation(array $location): void { $this->reply("📍 {$location['latitude']}, {$location['longitude']}"); }
+    protected function onContact(array $contact): void   { $this->reply('📱 ' . $contact['phone_number']); }
+    protected function onCallbackQuery(array $cb): void  { $this->answerCallback('OK'); $this->reply('Pressed: ' . $cb['data']); }
+}
+```
+
+Use it in your webhook (it verifies the secret, parses, and dispatches):
+
+```php
+(new MyBotHandler)->handleRequest(
+    $bot,
+    $request->getContent(),
+    $request->header('X-Telegram-Bot-Api-Secret-Token'),
+);
+```
+
+Override points: `commandX($payload)`, `onCommand($cmd, $payload)`, `onText($text)`,
+`onPhoto`, `onVideo`, `onDocument`, `onVoice`, `onAudio`, `onAnimation`, `onSticker`,
+`onLocation($loc)`, `onContact($c)`, `onCallbackQuery($cb)`, `onInlineQuery($q)`,
+`onPreCheckoutQuery($q)`, `onMessage`, `onOther`. Reply helpers: `reply()`, `replyPhoto()`,
+`replyChatAction()`, `answerCallback()`, `chatId()`, `fromId()`.
+
 ---
 
 ## 16. Telegram Business

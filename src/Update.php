@@ -147,6 +147,153 @@ final class Update
     }
 
     /**
+     * The id of the incoming message.
+     */
+    public function messageId(): ?int
+    {
+        $id = $this->message()['message_id'] ?? null;
+
+        return $id === null ? null : (int) $id;
+    }
+
+    /**
+     * Caption of a media message, if any.
+     */
+    public function caption(): ?string
+    {
+        $caption = $this->message()['caption'] ?? null;
+
+        return $caption === null ? null : (string) $caption;
+    }
+
+    // ---- Attachments (everything that can arrive) -------------------------
+
+    /**
+     * Photo sizes array (largest last), or null.
+     *
+     * @return array<int, array<string, mixed>>|null
+     */
+    public function photo(): ?array
+    {
+        $photo = $this->message()['photo'] ?? null;
+
+        return is_array($photo) ? $photo : null;
+    }
+
+    /**
+     * The largest photo's file_id, or null.
+     */
+    public function photoFileId(): ?string
+    {
+        $photo = $this->photo();
+
+        return $photo === null || $photo === [] ? null : (string) end($photo)['file_id'];
+    }
+
+    /** @return array<string, mixed>|null */
+    public function video(): ?array
+    {
+        return $this->attachment('video');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function document(): ?array
+    {
+        return $this->attachment('document');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function audio(): ?array
+    {
+        return $this->attachment('audio');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function voice(): ?array
+    {
+        return $this->attachment('voice');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function animation(): ?array
+    {
+        return $this->attachment('animation');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function sticker(): ?array
+    {
+        return $this->attachment('sticker');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function videoNote(): ?array
+    {
+        return $this->attachment('video_note');
+    }
+
+    /** @return array{latitude: float, longitude: float}|null */
+    public function location(): ?array
+    {
+        $loc = $this->attachment('location');
+
+        return $loc === null ? null : ['latitude' => (float) $loc['latitude'], 'longitude' => (float) $loc['longitude']];
+    }
+
+    /** @return array<string, mixed>|null */
+    public function contact(): ?array
+    {
+        return $this->attachment('contact');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function venue(): ?array
+    {
+        return $this->attachment('venue');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function poll(): ?array
+    {
+        return $this->attachment('poll');
+    }
+
+    /** @return array<string, mixed>|null */
+    public function dice(): ?array
+    {
+        return $this->attachment('dice');
+    }
+
+    /**
+     * The first file_id found on the message (photo, video, document, …).
+     */
+    public function fileId(): ?string
+    {
+        if (($id = $this->photoFileId()) !== null) {
+            return $id;
+        }
+
+        foreach (['video', 'document', 'audio', 'voice', 'animation', 'sticker', 'video_note'] as $type) {
+            $node = $this->attachment($type);
+            if ($node !== null && isset($node['file_id'])) {
+                return (string) $node['file_id'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function attachment(string $key): ?array
+    {
+        $value = $this->message()[$key] ?? null;
+
+        return is_array($value) ? $value : null;
+    }
+
+    /**
      * The chat id the update relates to.
      */
     public function chatId(): int|string|null
