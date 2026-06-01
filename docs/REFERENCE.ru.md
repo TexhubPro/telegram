@@ -183,11 +183,23 @@ $bot->chat($chatId)->mediaGroup([
 $bot->chat($chatId)->voice(InputFile::fromPath('/path/voice.ogg'))->send();
 // входящее: $update->voice()  → ['file_id' => ..., 'duration' => ...];  $update->fileId()
 
-// Chat actions («печатает…», «загружает фото…»):
+// Chat actions («печатает…», «загружает фото…») — вызвал, и клиент видит индикатор.
+// Проще всего — именованные методы на чате:
+$bot->chat($chatId)->typing();             // показывает «печатает…»
+$bot->chat($chatId)->uploadingPhoto();     // «отправляет фото…»
+$bot->chat($chatId)->uploadingVideo();
+$bot->chat($chatId)->recordingVoice();
+$bot->chat($chatId)->uploadingDocument();
+$bot->chat($chatId)->choosingSticker();
+$bot->chat($chatId)->findingLocation();
+
+// Или явно:
 $bot->sendChatAction($chatId, ChatAction::Typing);
 $bot->chat($chatId)->action('upload_voice');
-// внутри хендлера: $this->replyChatAction(ChatAction::Typing);
+// внутри хендлера: $this->chat->typing();
 ```
+
+> Действие держится ~5 секунд (или до отправки сообщения). Вызови снова, чтобы продлить.
 
 > Сообщение Telegram содержит **либо** `text` (текстовое), **либо** `caption` (медиа).
 > Поэтому для входящего фото/видео читай `$update->caption()`, для текста — `$update->text()`.
@@ -629,12 +641,23 @@ php artisan migrate
 php artisan telegram:bot:add
 
 php artisan telegram:bots                       # список всех ботов (БД + конфиг)
-php artisan telegram:webhook:set {bot?} {url?}  # установить вебхук (берёт сохранённый секрет)
+php artisan telegram:webhook:set {bot?}         # URL строится сам из APP_URL; секрет авто
 php artisan telegram:webhook:unset {bot?} --drop-pending
 php artisan telegram:webhook:info {bot?}        # текущая информация о вебхуке
 ```
 
 `{bot}` — имя бота или его id в БД (без аргумента берётся бот по умолчанию из конфига).
+
+`telegram:webhook:set` **строит URL автоматически** — `APP_URL` + `telegram.webhook.path`
+(по умолчанию `telegram/webhook`) — вручную вводить не нужно. Можно передать URL вручную,
+или задать `TELEGRAM_WEBHOOK_URL` глобально. Нужное в `.env`:
+
+```dotenv
+APP_URL=https://your-domain.tld
+# TELEGRAM_WEBHOOK_PATH=telegram/webhook    # опционально (по умолчанию)
+# TELEGRAM_WEBHOOK_URL=https://...          # опционально полный override
+# TELEGRAM_WEBHOOK_APPEND_BOT=true          # добавить /{bot} для роутинга по ботам
+```
 
 `.env`:
 

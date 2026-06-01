@@ -45,4 +45,27 @@ abstract class TelegramCommand extends Command
             return null;
         }
     }
+
+    /**
+     * Build the webhook URL automatically from config (APP_URL + path), or use
+     * the explicit TELEGRAM_WEBHOOK_URL override. Appends the bot name when
+     * `telegram.webhook.append_bot` is enabled.
+     */
+    protected function webhookUrl(?string $bot = null): string
+    {
+        $override = config('telegram.webhook.url');
+        if (is_string($override) && trim($override) !== '') {
+            return $override;
+        }
+
+        $base = rtrim((string) config('app.url'), '/');
+        $path = trim((string) config('telegram.webhook.path', 'telegram/webhook'), '/');
+        $url = $base . '/' . $path;
+
+        if ($bot !== null && config('telegram.webhook.append_bot')) {
+            $url .= '/' . rawurlencode($bot);
+        }
+
+        return $url;
+    }
 }

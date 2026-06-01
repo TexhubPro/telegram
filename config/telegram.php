@@ -32,6 +32,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Webhook
+    |--------------------------------------------------------------------------
+    |
+    | The webhook URL used by the `telegram:webhook:set` command. By default it
+    | is built automatically as: APP_URL + "/" + path. Set TELEGRAM_WEBHOOK_URL
+    | to override the whole URL. With "append_bot" the bot name is appended to
+    | the path (handy for multi-bot routing: /telegram/webhook/{bot}).
+    |
+    */
+    'webhook' => [
+        'url' => env('TELEGRAM_WEBHOOK_URL'),
+        'path' => env('TELEGRAM_WEBHOOK_PATH', 'telegram/webhook'),
+        'append_bot' => (bool) env('TELEGRAM_WEBHOOK_APPEND_BOT', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | API URL & timeout
     |--------------------------------------------------------------------------
     */

@@ -183,11 +183,23 @@ $bot->chat($chatId)->mediaGroup([
 $bot->chat($chatId)->voice(InputFile::fromPath('/path/voice.ogg'))->send();
 // incoming: $update->voice()  → ['file_id' => ..., 'duration' => ...];  $update->fileId()
 
-// Chat actions ("typing…", "uploading photo…"):
+// Chat actions ("typing…", "uploading photo…") — call one and the user sees the indicator.
+// Simplest: named methods on the chat:
+$bot->chat($chatId)->typing();             // shows "typing…"
+$bot->chat($chatId)->uploadingPhoto();     // "sending photo…"
+$bot->chat($chatId)->uploadingVideo();
+$bot->chat($chatId)->recordingVoice();
+$bot->chat($chatId)->uploadingDocument();
+$bot->chat($chatId)->choosingSticker();
+$bot->chat($chatId)->findingLocation();
+
+// Or explicitly:
 $bot->sendChatAction($chatId, ChatAction::Typing);
 $bot->chat($chatId)->action('upload_voice');
-// inside a handler: $this->replyChatAction(ChatAction::Typing);
+// inside a handler: $this->chat->typing();
 ```
+
+> The action lasts ~5 seconds (or until you send a message). Call it again to keep it showing.
 
 > A Telegram message holds **either** `text` (text message) **or** `caption` (media message).
 > So for an incoming photo/video read `$update->caption()`; for plain text read `$update->text()`.
@@ -629,12 +641,23 @@ Manage bots straight from the terminal:
 php artisan telegram:bot:add
 
 php artisan telegram:bots                       # list all bots (DB + config)
-php artisan telegram:webhook:set {bot?} {url?}  # register a webhook (uses stored secret)
+php artisan telegram:webhook:set {bot?}         # URL auto-built from APP_URL; secret auto-generated
 php artisan telegram:webhook:unset {bot?} --drop-pending
 php artisan telegram:webhook:info {bot?}        # show current webhook info
 ```
 
 `{bot}` is the bot name or DB id (omit it to use the default config bot).
+
+`telegram:webhook:set` **builds the URL automatically** — `APP_URL` + `telegram.webhook.path`
+(default `telegram/webhook`) — so you don't type it. Pass a URL to override per call, or set
+`TELEGRAM_WEBHOOK_URL` globally. Relevant `.env`:
+
+```dotenv
+APP_URL=https://your-domain.tld
+# TELEGRAM_WEBHOOK_PATH=telegram/webhook    # optional (default)
+# TELEGRAM_WEBHOOK_URL=https://...          # optional full override
+# TELEGRAM_WEBHOOK_APPEND_BOT=true          # append /{bot} for per-bot routing
+```
 
 `.env`:
 

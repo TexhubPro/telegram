@@ -49,14 +49,12 @@ final class AddBotCommand extends TelegramCommand
             $this->line("  Generated secret: <info>{$secret}</info>");
         }
 
-        // Webhook registration.
-        if ($this->confirm('Register a webhook now?', false)) {
-            $default = rtrim((string) config('app.url'), '/') . '/telegram/webhook';
-            $url = (string) $this->ask('Webhook URL', $default);
-
+        // Webhook registration — URL is generated automatically from config.
+        $autoUrl = $this->webhookUrl($name);
+        if ($this->confirm("Register the webhook now at {$autoUrl} ?", false)) {
             try {
-                $bot->setWebhook($url, array_filter(['secret_token' => $secret]));
-                $this->info("🔔 Webhook set to {$url}");
+                $bot->setWebhook($autoUrl, array_filter(['secret_token' => $secret]));
+                $this->info("🔔 Webhook set to {$autoUrl}");
             } catch (\Throwable $e) {
                 $this->error('Failed to set webhook: ' . $e->getMessage());
             }

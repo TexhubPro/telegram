@@ -126,6 +126,21 @@ final class HandlerTest extends TestCase
         $this->assertSame('sendVoice', $t->lastMethod());
     }
 
+    public function test_named_chat_actions(): void
+    {
+        $t = new FakeTransport();
+        $t->willReturn(true)->willReturn(true);
+        $bot = new Bot(new Config('123:ABC'), $t);
+
+        $bot->chat(7)->typing();
+        $this->assertSame('sendChatAction', $t->lastMethod());
+        $this->assertSame('typing', $t->last()['params']['action']);
+        $this->assertSame(7, $t->last()['params']['chat_id']);
+
+        $bot->chat(7)->uploadingPhoto();
+        $this->assertSame('upload_photo', $t->last()['params']['action']);
+    }
+
     public function test_handler_request_verifies_secret(): void
     {
         $t = (new FakeTransport())->willReturn(['message_id' => 1, 'chat' => ['id' => 1]]);

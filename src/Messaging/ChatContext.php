@@ -104,6 +104,56 @@ final class ChatContext
         return $this->bot->sendChatAction($this->chatId, $action);
     }
 
+    // ---- Named chat actions (the user sees "typing…", "uploading photo…") --
+
+    /** Show "typing…". */
+    public function typing(): Response
+    {
+        return $this->action(ChatAction::Typing);
+    }
+
+    /** Show "uploading photo…". */
+    public function uploadingPhoto(): Response
+    {
+        return $this->action(ChatAction::UploadPhoto);
+    }
+
+    /** Show "uploading video…". */
+    public function uploadingVideo(): Response
+    {
+        return $this->action(ChatAction::UploadVideo);
+    }
+
+    /** Show "recording voice…". */
+    public function recordingVoice(): Response
+    {
+        return $this->action(ChatAction::RecordVoice);
+    }
+
+    /** Show "uploading voice…". */
+    public function uploadingVoice(): Response
+    {
+        return $this->action(ChatAction::UploadVoice);
+    }
+
+    /** Show "uploading document…". */
+    public function uploadingDocument(): Response
+    {
+        return $this->action(ChatAction::UploadDocument);
+    }
+
+    /** Show "choosing sticker…". */
+    public function choosingSticker(): Response
+    {
+        return $this->action(ChatAction::ChooseSticker);
+    }
+
+    /** Show "finding location…". */
+    public function findingLocation(): Response
+    {
+        return $this->action(ChatAction::FindLocation);
+    }
+
     public function deleteMessage(int $messageId): Response
     {
         return $this->bot->deleteMessage($this->chatId, $messageId);

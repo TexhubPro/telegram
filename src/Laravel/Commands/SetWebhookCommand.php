@@ -9,9 +9,9 @@ namespace TexHub\Telegram\Laravel\Commands;
  */
 final class SetWebhookCommand extends TelegramCommand
 {
-    protected $signature = 'telegram:webhook:set {bot? : Bot name or id} {url? : Webhook URL} {--secret= : Secret token (auto-generated if omitted and none stored)}';
+    protected $signature = 'telegram:webhook:set {bot? : Bot name or id} {url? : Webhook URL (auto-built from APP_URL when omitted)} {--secret= : Secret token (auto-generated if omitted and none stored)}';
 
-    protected $description = 'Set the Telegram webhook for a bot';
+    protected $description = 'Set the Telegram webhook for a bot (URL auto-generated from config)';
 
     public function handle(): int
     {
@@ -22,10 +22,14 @@ final class SetWebhookCommand extends TelegramCommand
 
         [$bot, $record] = $resolved;
 
-        $url = (string) ($this->argument('url')
-            ?: $this->ask('Webhook URL', rtrim((string) config('app.url'), '/') . '/telegram/webhook'));
+        // Auto-build the URL from config (APP_URL + telegram.webhook.path) unless one is passed.
+        $url = (string) ($this->argument('url') ?: $this->webhookUrl($this->argument('bot')));
 
-        $secret = $this->option('secret') ?: ($record?->webhook_secret) ?: $bot->config()->webhookSecret;
+        // Auto-generate a secret if none is provided/stored.
+        $secret = $this->option('secret')
+            ?: ($record?->webhook_secret)
+            ?: $bot->config()->webhookSecret
+            ?: bin2hex(random_bytes(16));
 
         try {
             $bot->setWebhook($url, array_filter(['secret_token' => $secret]));
