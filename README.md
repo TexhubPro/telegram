@@ -1,6 +1,6 @@
 # TexHub · Telegram
 
-**🌐 English** · [Русский](README.ru.md)
+**English** · [Русский](README.ru.md)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PHP](https://img.shields.io/badge/php-%5E8.2-777bb4.svg)](composer.json)
@@ -10,30 +10,30 @@ A full-featured, **multi-tenant** Telegram **Bot API** & **Telegram Business** S
 
 > The **entire Bot API** is reachable via `->call()`, with typed helpers and builders for the common cases. Secure by default: webhook secret-token verification and token scrubbing in errors.
 
-> 📘 **[Full method reference & cookbook →](docs/REFERENCE.md)** — every method with copy-paste examples and example responses.
+> **[Full method reference & cookbook →](docs/REFERENCE.md)** — every method with copy-paste examples and example responses.
 
 Reference: <https://core.telegram.org/bots/api>
 
 ---
 
-## ✨ Features
+## Features
 
-- 🤖 **Easy bot builder** — extend `UpdateHandler`, write `public function start()` for `/start`
-- 💬 **Fluent replies** — `$this->chat->message('Hi')->html()->keyboard(...)->send()`
-- ⌨️ **Keyboards** — inline & reply builders, every button type (web app, **copy text**, login, …)
-- 🖼 **Messages & media** — text, photo, video, audio, voice, document, sticker, location, contact, poll, dice
-- ✏️ **Edit / delete / forward / copy**, reactions, pin, chat actions
-- 📂 **Files** — upload local files, `getFile`, download bytes/to disk
-- 💳 **Payments** (invoices & Telegram Stars) and 🎮 **Games**
-- 🔔 **Webhooks** — secret-token verification + a rich `Update` parser for everything that arrives
-- 💼 **Telegram Business** — business updates + send on behalf of a connection
-- 🏢 **Multi-tenant** — many bots; store them (and every chat) in your DB
-- 🖥 **Artisan commands** — add bots, set/unset webhooks, list bots
-- 🧩 **Full coverage** — `->call('anyMethod', [...])` for everything else; fully unit-tested
+- **Easy bot builder** — extend `UpdateHandler`, write `public function start()` for `/start`
+- **Fluent replies** — `$this->chat->message('Hi')->html()->keyboard(...)->send()`
+- **Keyboards** — inline & reply builders, every button type (web app, **copy text**, login, …)
+- **Messages & media** — text, photo, video, audio, voice, document, sticker, location, contact, poll, dice
+- **Edit / delete / forward / copy**, reactions, pin, chat actions
+- **Files** — upload local files, `getFile`, download bytes/to disk
+- **Payments** (invoices & Telegram Stars) and **Games**
+- **Webhooks** — secret-token verification + a rich `Update` parser for everything that arrives
+- **Telegram Business** — business updates + send on behalf of a connection
+- **Multi-tenant** — many bots; store them (and every chat) in your DB
+- **Artisan commands** — add bots, set/unset webhooks, list bots
+- **Full coverage** — `->call('anyMethod', [...])` for everything else; fully unit-tested
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 composer require texhub/telegram
@@ -43,7 +43,7 @@ Requirements: **PHP ≥ 8.2** with `curl`, `json`, `hash`.
 
 ---
 
-## 🚀 Build a bot (the easy way)
+## Build a bot (the easy way)
 
 Extend `UpdateHandler` and write a method **named after each command**. The argument is
 whatever follows it (e.g. a referral code from `/start REF123`). Reply with the fluent
@@ -89,7 +89,7 @@ Override `onText`, `onPhoto`, `onVideo`, `onDocument`, `onVoice`, `onAudio`, `on
 
 ---
 
-## ✍️ Sending directly (without a handler)
+## Sending directly (without a handler)
 
 ```php
 use TexHub\Telegram\Telegram;
@@ -124,7 +124,7 @@ See the **[full reference](docs/REFERENCE.md)** for every method (payments, game
 
 ---
 
-## 🔔 Webhooks
+## Webhooks
 
 ```php
 $bot->setWebhook('https://app.tj/telegram/webhook', [
@@ -143,7 +143,7 @@ The incoming `Update` exposes **everything**: `text()`, `photo()/photoFileId()`,
 
 ---
 
-## 💼 Telegram Business
+## Telegram Business
 
 ```php
 if ($update->isBusiness()) {
@@ -154,7 +154,7 @@ if ($update->isBusiness()) {
 
 ---
 
-## 🏢 Multi-tenant (many bots)
+## Multi-tenant (many bots)
 
 ```php
 $tg = Telegram::fromArray([
@@ -168,7 +168,7 @@ $tg->botFromToken($tenant->telegram_token)->sendMessage($chatId, '...'); // from
 
 ---
 
-## <a name="laravel"></a>🧩 Laravel
+## <a name="laravel"></a> Laravel
 
 Auto-discovered. Publish config (+ optional migrations for storing bots & chats):
 
@@ -178,7 +178,7 @@ php artisan vendor:publish --tag=telegram-migrations
 php artisan migrate
 ```
 
-### 🖥 Artisan commands
+### Artisan commands
 
 ```bash
 php artisan telegram:bot:add        # interactive: token → auto-secret → set webhook → save to DB
@@ -231,7 +231,7 @@ public function webhook(string $bot, \Illuminate\Http\Request $request)
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```php
 use TexHub\Telegram\Bot;
@@ -249,7 +249,7 @@ composer install && composer test
 
 ---
 
-## 📚 Architecture
+## Architecture
 
 ```
 src/

@@ -1,6 +1,6 @@
 # TexHub · Telegram
 
-[English](README.md) · **🌐 Русский**
+[English](README.md) · **Русский**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PHP](https://img.shields.io/badge/php-%5E8.2-777bb4.svg)](composer.json)
@@ -10,30 +10,30 @@
 
 > **Весь Bot API** доступен через `->call()`, плюс типизированные методы и билдеры для частых случаев. Безопасно по умолчанию: проверка secret-токена вебхука и сокрытие токена в ошибках.
 
-> 📘 **[Полный справочник методов и примеров →](docs/REFERENCE.ru.md)** — каждый метод с готовыми примерами и примерами ответов.
+> **[Полный справочник методов и примеров →](docs/REFERENCE.ru.md)** — каждый метод с готовыми примерами и примерами ответов.
 
 Документация: <https://core.telegram.org/bots/api>
 
 ---
 
-## ✨ Возможности
+## Возможности
 
-- 🤖 **Простой конструктор бота** — расширь `UpdateHandler`, напиши `public function start()` для `/start`
-- 💬 **Текучие ответы** — `$this->chat->message('Привет')->html()->keyboard(...)->send()`
-- ⌨️ **Клавиатуры** — билдеры inline и reply, все типы кнопок (web app, **копирование текста**, login, …)
-- 🖼 **Сообщения и медиа** — текст, фото, видео, аудио, голос, документ, стикер, локация, контакт, опрос, dice
-- ✏️ **Редактирование / удаление / пересылка / копирование**, реакции, закрепление, chat actions
-- 📂 **Файлы** — загрузка локальных файлов, `getFile`, скачивание байтов/на диск
-- 💳 **Платежи** (инвойсы и Telegram Stars) и 🎮 **Игры**
-- 🔔 **Вебхуки** — проверка secret-токена + богатый разбор `Update` всего, что приходит
-- 💼 **Telegram Business** — бизнес-апдейты + отправка от имени подключения
-- 🏢 **Multi-tenant** — много ботов; храни их (и все чаты) в своей БД
-- 🖥 **Artisan-команды** — добавление ботов, set/unset вебхуков, список
-- 🧩 **Полное покрытие** — `->call('любойМетод', [...])`; полностью покрыт тестами
+- **Простой конструктор бота** — расширь `UpdateHandler`, напиши `public function start()` для `/start`
+- **Текучие ответы** — `$this->chat->message('Привет')->html()->keyboard(...)->send()`
+- **Клавиатуры** — билдеры inline и reply, все типы кнопок (web app, **копирование текста**, login, …)
+- **Сообщения и медиа** — текст, фото, видео, аудио, голос, документ, стикер, локация, контакт, опрос, dice
+- **Редактирование / удаление / пересылка / копирование**, реакции, закрепление, chat actions
+- **Файлы** — загрузка локальных файлов, `getFile`, скачивание байтов/на диск
+- **Платежи** (инвойсы и Telegram Stars) и **Игры**
+- **Вебхуки** — проверка secret-токена + богатый разбор `Update` всего, что приходит
+- **Telegram Business** — бизнес-апдейты + отправка от имени подключения
+- **Multi-tenant** — много ботов; храни их (и все чаты) в своей БД
+- **Artisan-команды** — добавление ботов, set/unset вебхуков, список
+- **Полное покрытие** — `->call('любойМетод', [...])`; полностью покрыт тестами
 
 ---
 
-## 📦 Установка
+## Установка
 
 ```bash
 composer require texhub/telegram
@@ -43,7 +43,7 @@ composer require texhub/telegram
 
 ---
 
-## 🚀 Бот по-простому
+## Бот по-простому
 
 Расширь `UpdateHandler` и напиши метод **с именем команды**. Аргумент — то, что идёт после
 команды (например реферальный код из `/start REF123`). Отвечай текучим `$this->chat`:
@@ -88,7 +88,7 @@ class MyBot extends UpdateHandler
 
 ---
 
-## ✍️ Отправка напрямую (без хендлера)
+## Отправка напрямую (без хендлера)
 
 ```php
 use TexHub\Telegram\Telegram;
@@ -123,7 +123,7 @@ $bot->call('banChatMember', ['chat_id' => $chatId, 'user_id' => $userId]);
 
 ---
 
-## 🔔 Вебхуки
+## Вебхуки
 
 ```php
 $bot->setWebhook('https://app.tj/telegram/webhook', [
@@ -142,7 +142,7 @@ $bot->getWebhookInfo();
 
 ---
 
-## 💼 Telegram Business
+## Telegram Business
 
 ```php
 if ($update->isBusiness()) {
@@ -153,7 +153,7 @@ if ($update->isBusiness()) {
 
 ---
 
-## 🏢 Multi-tenant (много ботов)
+## Multi-tenant (много ботов)
 
 ```php
 $tg = Telegram::fromArray([
@@ -167,7 +167,7 @@ $tg->botFromToken($tenant->telegram_token)->sendMessage($chatId, '...'); // из
 
 ---
 
-## <a name="laravel"></a>🧩 Laravel
+## <a name="laravel"></a> Laravel
 
 Регистрируется автоматически. Опубликуй конфиг (+ опц. миграции для хранения ботов и чатов):
 
@@ -177,7 +177,7 @@ php artisan vendor:publish --tag=telegram-migrations
 php artisan migrate
 ```
 
-### 🖥 Artisan-команды
+### Artisan-команды
 
 ```bash
 php artisan telegram:bot:add        # интерактивно: токен → авто-секрет → вебхук → сохранить в БД
@@ -230,7 +230,7 @@ public function webhook(string $bot, \Illuminate\Http\Request $request)
 
 ---
 
-## 🧪 Тестирование
+## Тестирование
 
 ```php
 use TexHub\Telegram\Bot;
@@ -248,7 +248,7 @@ composer install && composer test
 
 ---
 
-## 📚 Архитектура
+## Архитектура
 
 ```
 src/
